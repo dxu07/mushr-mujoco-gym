@@ -12,7 +12,6 @@ from scipy.spatial.transform import Rotation as R
 
 
 
-
 DEFAULT_CAMERA_CONFIG = {
     "trackbodyid": -1,
     "distance": 4.0,
@@ -110,19 +109,21 @@ class MushrBlockEnv(MujocoEnv, utils.EzPickle):
         self.set_state(qpos, qvel)
 
         observation = self._get_obs()
+
         return observation
 
     def _get_obs(self):
         # pos = self.unwrapped.data.qpos
         # vel = self.unwrapped.data.qvel
 
-        position = self.data.qpos.flatten()
+        position = self.unwrapped.data.qpos.flatten()
 
         car = position[:7]
         block = position[-7:]
 
-        block_pos, block_quat = np.array(block[:3]), R.from_quat(block[-4:])
-        car_pos, car_quat = np.array(car[:3]), R.from_quat(car[-4:])
+        block_pos, block_quat = np.array(block[:3]), R.from_quat(np.roll(block[-4:], -1))
+        block_pos[2] = 0
+        car_pos, car_quat = np.array(car[:3]), R.from_quat(np.roll(car[-4:], -1))
 
         delta_world = block_pos - car_pos
 
@@ -132,8 +133,5 @@ class MushrBlockEnv(MujocoEnv, utils.EzPickle):
         rel_orientation = car_quat_inv * block_quat
 
         b_angle_wrt_c = rel_orientation.as_euler('xyz', degrees=False)[2]
-
-        print(delta_xy[0], delta_xy[1], b_angle_wrt_c)
-
 
         return np.array([delta_xy[0], delta_xy[1], b_angle_wrt_c])
