@@ -57,7 +57,7 @@ class MushrBlockEnv(MujocoEnv, utils.EzPickle):
         else:
             self._get_rew = self._default_get_rew
 
-        observation_space = Box(low=-np.inf, high=np.inf, shape=(3,), dtype=np.float64)
+        observation_space = Box(low=-np.inf, high=np.inf, shape=(6,), dtype=np.float64)
 
         with pkg_resources.path('mushr_mujoco_gym.include.models', xml_file) as xml_path:
             model_path = str(xml_path)
@@ -133,5 +133,7 @@ class MushrBlockEnv(MujocoEnv, utils.EzPickle):
         rel_orientation = car_quat_inv * block_quat
 
         b_angle_wrt_c = rel_orientation.as_euler('xyz', degrees=False)[2]
+        car_angle = car_quat.as_euler('xyz', degrees=False)[2]
 
-        return np.array([delta_xy[0], delta_xy[1], b_angle_wrt_c])
+        return np.concatenate([np.array([delta_xy[0], delta_xy[1], b_angle_wrt_c]),
+                              np.array([car_pos[0], car_pos[1], car_angle])])
