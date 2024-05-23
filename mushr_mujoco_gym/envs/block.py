@@ -8,8 +8,8 @@ from gymnasium.envs.mujoco import MujocoEnv
 from gymnasium.spaces import Box
 import importlib.resources as pkg_resources
 
-from scipy.spatial.transform import Rotation as R
 
+from scipy.spatial.transform import Rotation as R
 
 
 DEFAULT_CAMERA_CONFIG = {
