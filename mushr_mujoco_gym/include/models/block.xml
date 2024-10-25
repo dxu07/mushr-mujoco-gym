@@ -17,7 +17,7 @@
   </visual>
   <worldbody>
     <geom contype="1" friction=".5 0.005 0.0001" name="floor" pos="0 0 0" size="0 0 .25" type="plane" material="matplane" condim="3"/>
-    <body pos="0.000000 0.000000 0.05" name="block" euler="0 0 0.000000">
+    <body pos="2.500000 2.000000 0.05" name="block" euler="0 0 0.000000">
       <joint type="free"/>
       <geom type="box" mass="0.8" contype="1" friction="0.65 0.45 0.001" conaffinity="1" size=".05 .05 .05" rgba="0.247 0.772 0.760 1"/>
     </body>

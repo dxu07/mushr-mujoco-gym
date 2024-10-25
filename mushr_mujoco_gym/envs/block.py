@@ -6,7 +6,9 @@ import gymnasium as gym
 from gymnasium import utils
 from gymnasium.envs.mujoco import MujocoEnv
 from gymnasium.spaces import Box
-import importlib.resources as pkg_resources
+import importlib_resources as pkg_resources
+
+import mujoco
 
 
 from scipy.spatial.transform import Rotation as R
@@ -38,7 +40,7 @@ class MushrBlockEnv(MujocoEnv, utils.EzPickle):
     def __init__(
         self,
         xml_file: str = "block.xml",
-        frame_skip: int = 5,
+        frame_skip: int = 50,
         default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
         cost_function = None,
         **kwargs
@@ -57,7 +59,7 @@ class MushrBlockEnv(MujocoEnv, utils.EzPickle):
         else:
             self._get_rew = self._default_get_rew
 
-        observation_space = Box(low=-np.inf, high=np.inf, shape=(6,), dtype=np.float64)
+        observation_space = Box(low=-np.inf, high=np.inf, shape=(12,), dtype=np.float64)
 
         with pkg_resources.path('mushr_mujoco_gym.include.models', xml_file) as xml_path:
             model_path = str(xml_path)
@@ -117,23 +119,26 @@ class MushrBlockEnv(MujocoEnv, utils.EzPickle):
         # vel = self.unwrapped.data.qvel
 
         position = self.unwrapped.data.qpos.flatten()
+        car = position[:7].copy()
+        block = position[-7:].copy()
 
-        car = position[:7]
-        block = position[-7:]
+        # block_pos, block_quat = np.array(block[:3]), R.from_quat(np.roll(block[-4:], -1))
+        # block_pos[2] = 0
+        # car_pos, car_quat = np.array(car[:3]), R.from_quat(np.roll(car[-4:], -1))
 
-        block_pos, block_quat = np.array(block[:3]), R.from_quat(np.roll(block[-4:], -1))
-        block_pos[2] = 0
-        car_pos, car_quat = np.array(car[:3]), R.from_quat(np.roll(car[-4:], -1))
+        # delta_world = block_pos - car_pos
 
-        delta_world = block_pos - car_pos
+        # car_quat_inv = car_quat.inv()
 
-        car_quat_inv = car_quat.inv()
+        # delta_xy = car_quat_inv.apply(delta_world)
+        # rel_orientation = car_quat_inv * block_quat
 
-        delta_xy = car_quat_inv.apply(delta_world)
-        rel_orientation = car_quat_inv * block_quat
+        # b_angle_wrt_c = rel_orientation.as_euler('xyz', degrees=False)[2]
+        # car_angle = car_quat.as_euler('xyz', degrees=False)[2]
+        
+        car_no_z = np.concatenate([car[:2], car[-4:]])
+        block_no_z = np.concatenate([block[:2], block[-4:]])
 
-        b_angle_wrt_c = rel_orientation.as_euler('xyz', degrees=False)[2]
-        car_angle = car_quat.as_euler('xyz', degrees=False)[2]
-
-        return np.concatenate([np.array([delta_xy[0], delta_xy[1], b_angle_wrt_c]),
-                              np.array([car_pos[0], car_pos[1], car_angle])])
+        return np.concatenate([np.array(block_no_z),
+                                np.array(car_no_z)])
+                            #   np.array([car_pos[0], car_pos[1], car_angle])])
