@@ -104,6 +104,25 @@ class MushrBlockEnv(MujocoEnv, utils.EzPickle):
     def _default_get_rew(self, action):
         return 0, {}
 
+    def set_init_states(self, init_states):
+        '''
+        init_states represent initial value for observed states 
+        
+        car_pos - states[0:2]
+        car_quats - states[2:6]
+        block_pos - states[6:8]
+        block_quats - states[8:12]
+        '''
+        qpos = self.unwrapped.data.qpos.flatten()
+        qvel = self.unwrapped.data.qvel.flatten()
+        qpos[0:2] = init_states[0:2]
+        qpos[3:7] = init_states[2:6]
+        qpos[14:16] = init_states[6:8]
+        qpos[16:20] = init_states[8:12]
+        self.set_state(qpos, qvel)
+        observation = self._get_obs()
+        return observation
+
     def reset_model(self):
         qpos = self.init_qpos 
         qvel = self.init_qvel
